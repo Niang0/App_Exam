@@ -24,15 +24,15 @@ menu = st.sidebar.radio("Navigation", [
 
 # --- Fichiers de données ---
 fichiers_brutes = {
-    "Appartements à louer": "data/Appartements_____a___louer.xlsx",
-    "Appartements meublés": "data/Appartements_______meubles.xlsx",
-    "Terrains à vendre": "data/terrains____a__vendre.xlsx"
+    "Appartements à louer": "Data/Appartements_____a___louer.xlsx",
+    "Appartements meublés": "Data/Appartements_______meubles.xlsx",
+    "Terrains à vendre": "Data/terrains____a__vendre.xlsx"
 }
 
 fichiers_nettoyes = {
-    "Appartements à louer": "data/expat_dkr_app_nettoyees.csv",
-    "Appartements meublés": "data/expatDkr_app_meubles.csv",
-    "Terrains à vendre": "data/expat_terrains_nettoyees.csv"
+    "Appartements à louer": "Data/expat_dkr_app_nettoyees.csv",
+    "Appartements meublés": "Data/expatDkr_app_meubles.csv",
+    "Terrains à vendre": "Data/expat_terrains_nettoyees.csv"
 }
 
 # --- Scraping ---
