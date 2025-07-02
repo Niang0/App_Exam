@@ -1,12 +1,15 @@
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import time
 
 
 def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
-    # URL de base selon la catégorie choisie
+    # Mots de base selon la catégorie choisie
     base_urls = {
         "Appartements à louer": "https://www.expat-dakar.com/appartements-a-louer?page=",
         "Appartements meublés": "https://www.expat-dakar.com/appartements-meubles?page=",
@@ -25,14 +28,19 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--no-sandbox")
 
-    driver = webdriver.Chrome(options=options)
+    # Instantiation du driver
+    driver = webdriver.Chrome(service=Service(), options=options)
     data = []
 
     try:
         for page in range(1, nb_pages + 1):
             url = f"{url_base}{page}"
             driver.get(url)
-            time.sleep(2)  # Laisse le temps de charger
+
+            # Attendre que les éléments soient chargeés
+            WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "[class='listings-cards__list-item ']"))
+            )
 
             containers = driver.find_elements(By.CSS_SELECTOR, "[class='listings-cards__list-item ']")
 
@@ -44,12 +52,12 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
                     tags_container = container.find_element(By.CSS_SELECTOR, '.listing-card__header__tags')
                     span_tags = tags_container.find_elements(By.CSS_SELECTOR, 'span.listing-card__header__tags__item')
 
-                    chambres = span_tags[0].text if len(span_tags) >= 1 else None
-                    superficie = span_tags[1].text if len(span_tags) >= 2 else None
+                    chambres = span_tags[0].text if len(span_tags) > 0 else None
+                    superficie = span_tags[1].text if len(span_tags) > 1 else None
 
                     prix = container.find_element(By.CSS_SELECTOR, ".listing-card__info-bar").text
 
-                    image = container.find_element(By.CSS_SELECTOR, ".listing-card__image__resource.vh-img")
+                    image = container.find_element(By.CSS_SELECTOR, ".listing-card__image__resource")
                     image_link = image.get_attribute("src")
 
                     data.append({
@@ -63,6 +71,7 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
                     })
 
                 except Exception as e:
+                    print(f"Erreur lors du traitement d'un élément: {e}")
                     continue  # Ignore les erreurs d'une annonce
 
     finally:
@@ -71,3 +80,9 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
     # Convertir en DataFrame
     df = pd.DataFrame(data)
     return df
+
+
+# Exemple d'appel à la fonction
+if __name__ == "__main__":
+    df = scraper_multi_pages(nb_pages=5, categorie="Appartements meublés")
+    print(df)
