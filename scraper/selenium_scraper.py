@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 import time
 
 
-def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
+def scraper_multi_pages(nb_pages=3, categorie="Appartements meublés"):
     # URL de base selon la catégorie choisie
     base_urls = {
         "Appartements à louer": "https://www.expat-dakar.com/appartements-a-louer?page=",
