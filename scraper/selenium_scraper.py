@@ -1,8 +1,9 @@
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
+import pandas as pd
 import time
 
 def scraper_multi_pages(nb_pages=3, categorie="Appartements meublés"):
@@ -23,8 +24,9 @@ def scraper_multi_pages(nb_pages=3, categorie="Appartements meublés"):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
 
-    # ✅ Télécharger et utiliser automatiquement le bon ChromeDriver
-    driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+    # ✅ CORRECTION ICI
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=options)
 
     data = []
 
@@ -35,17 +37,14 @@ def scraper_multi_pages(nb_pages=3, categorie="Appartements meublés"):
             time.sleep(2)
 
             containers = driver.find_elements(By.CSS_SELECTOR, "[class='listings-cards__list-item ']")
-
             for container in containers:
                 try:
                     details = container.find_element(By.CSS_SELECTOR, ".listing-card__header__title").text
                     adresse = container.find_element(By.CSS_SELECTOR, ".listing-card__header__location").text
 
-                    tags_container = container.find_element(By.CSS_SELECTOR, ".listing-card__header__tags")
-                    span_tags = tags_container.find_elements(By.CSS_SELECTOR, "span.listing-card__header__tags__item")
-
-                    chambres = span_tags[0].text if len(span_tags) >= 1 else None
-                    superficie = span_tags[1].text if len(span_tags) >= 2 else None
+                    tags = container.find_elements(By.CSS_SELECTOR, ".listing-card__header__tags__item")
+                    chambres = tags[0].text if len(tags) > 0 else None
+                    superficie = tags[1].text if len(tags) > 1 else None
 
                     prix = container.find_element(By.CSS_SELECTOR, ".listing-card__info-bar").text
                     image = container.find_element(By.CSS_SELECTOR, ".listing-card__image__resource.vh-img").get_attribute("src")
@@ -59,10 +58,8 @@ def scraper_multi_pages(nb_pages=3, categorie="Appartements meublés"):
                         "prix": prix,
                         "image_lien": image
                     })
-
-                except Exception:
+                except:
                     continue
-
     finally:
         driver.quit()
 
