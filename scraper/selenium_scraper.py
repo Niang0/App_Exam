@@ -1,13 +1,12 @@
+import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-import pandas as pd
 import time
-import shutil
+
 
 def scraper_multi_pages(nb_pages=3, categorie="Appartements meublés"):
+    # URL de base selon la catégorie choisie
     base_urls = {
         "Appartements à louer": "https://www.expat-dakar.com/appartements-a-louer?page=",
         "Appartements meublés": "https://www.expat-dakar.com/appartements-meubles?page=",
@@ -18,40 +17,40 @@ def scraper_multi_pages(nb_pages=3, categorie="Appartements meublés"):
     if not url_base:
         raise ValueError(f"Catégorie inconnue : {categorie}")
 
-    if shutil.which("google-chrome") is None:
-        raise RuntimeError("❌ Google Chrome n’est pas installé ou inaccessible dans cet environnement.")
-
+    # Configuration du navigateur en mode headless
     options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
-    options.binary_location = "/usr/bin/google-chrome"
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--no-sandbox")
 
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service, options=options)
-
+    driver = webdriver.Chrome(options=options)
     data = []
 
     try:
         for page in range(1, nb_pages + 1):
             url = f"{url_base}{page}"
             driver.get(url)
-            time.sleep(2)
+            time.sleep(2)  # Laisse le temps de charger
 
             containers = driver.find_elements(By.CSS_SELECTOR, "[class='listings-cards__list-item ']")
+
             for container in containers:
                 try:
                     details = container.find_element(By.CSS_SELECTOR, ".listing-card__header__title").text
                     adresse = container.find_element(By.CSS_SELECTOR, ".listing-card__header__location").text
 
-                    tags = container.find_elements(By.CSS_SELECTOR, ".listing-card__header__tags__item")
-                    chambres = tags[0].text if len(tags) > 0 else None
-                    superficie = tags[1].text if len(tags) > 1 else None
+                    tags_container = container.find_element(By.CSS_SELECTOR, '.listing-card__header__tags')
+                    span_tags = tags_container.find_elements(By.CSS_SELECTOR, 'span.listing-card__header__tags__item')
+
+                    chambres = span_tags[0].text if len(span_tags) >= 1 else None
+                    superficie = span_tags[1].text if len(span_tags) >= 2 else None
 
                     prix = container.find_element(By.CSS_SELECTOR, ".listing-card__info-bar").text
-                    image = container.find_element(By.CSS_SELECTOR, ".listing-card__image__resource.vh-img").get_attribute("src")
+
+                    image = container.find_element(By.CSS_SELECTOR, ".listing-card__image__resource.vh-img")
+                    image_link = image.get_attribute("src")
 
                     data.append({
                         "categorie": categorie,
@@ -60,11 +59,15 @@ def scraper_multi_pages(nb_pages=3, categorie="Appartements meublés"):
                         "chambres": chambres,
                         "superficie": superficie,
                         "prix": prix,
-                        "image_lien": image
+                        "image_lien": image_link
                     })
-                except:
-                    continue
+
+                except Exception as e:
+                    continue  # Ignore les erreurs d'une annonce
+
     finally:
         driver.quit()
 
-    return pd.DataFrame(data)
+    # Convertir en DataFrame
+    df = pd.DataFrame(data)
+    return df
