@@ -39,7 +39,7 @@ fichiers_nettoyes = {
 if menu == "Scraper les données (nettoyées)":
     st.header("🕷️ Scraper les données")
     categorie = st.selectbox("Choisissez une catégorie :", list(fichiers_nettoyes.keys()))
-    nb_pages = st.slider("Nombre de pages à scraper :", 1, 90, 3)
+    nb_pages = st.slider("Nombre de pages à scraper :", 1, 100, 5)
 
     if st.button("Lancer le scraping"):
         with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
