@@ -29,9 +29,8 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
     options.add_argument("--no-sandbox")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-dev-shm-usage")
-    
     # Instantiation du driver
-    driver = webdriver.Chrome(options=pd.options)
+    driver = webdriver.Chrome(options=options)
     data = []
 
     try:

@@ -40,16 +40,22 @@ if menu == "Scraper les données (nettoyées)":
     st.header("🕷️ Scraper les données")
     categorie = st.selectbox("Choisissez une catégorie :", list(fichiers_nettoyes.keys()))
     nb_pages = st.slider("Nombre de pages à scraper :", 1, 100, 5)
-
-    if st.button("Lancer le scraping"):
-        with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
+if st.button("Lancer le scraping"):
+    with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
+        try:
             df = scraper_multi_pages(nb_pages, categorie)
 
-            fichier_csv = fichiers_nettoyes[categorie]
-            df.to_csv(fichier_csv, index=False)
+            if df.empty:
+                st.warning("Le scraping a réussi mais aucun résultat n’a été trouvé.")
+            else:
+                fichier_csv = fichiers_nettoyes[categorie]
+                df.to_csv(fichier_csv, index=False)
 
-            st.success(f"{len(df)} annonces récupérées et enregistrées dans : `{fichier_csv}`")
-            st.dataframe(df.head())
+                st.success(f"{len(df)} annonces récupérées et enregistrées dans : `{fichier_csv}`")
+                st.dataframe(df.head())
+
+        except Exception as e:
+            st.error(f"❌ Une erreur est survenue pendant le scraping : {e}")
 
 # --- Visualisation Dashboard ---
 elif menu == "Visualiser le dashboard":
