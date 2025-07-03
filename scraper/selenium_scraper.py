@@ -30,7 +30,7 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
 
     # Instantiation du driver
     driver = webdriver.Chrome(service=Service(), options=options)
-    driver = webdriver.Chrome(chrome_driver_path)
+    driver = webdriver.Chrome()
     driver.get("https://www.google.com/")
     driver.quit()
     data = []
