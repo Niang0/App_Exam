@@ -43,7 +43,7 @@ if menu == "Scraper les données (nettoyées)":
 
     if st.button("Lancer le scraping"):
         with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
-           c
+            df = scraper_multi_pages(nb_pages, categorie)
 
             fichier_csv = fichiers_nettoyes[categorie]
             df.to_csv(fichier_csv, index=False)
