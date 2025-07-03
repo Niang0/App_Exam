@@ -23,14 +23,14 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés, Appartemen
         raise ValueError(f"Catégorie inconnue : {categorie}")
 
     # Configuration du navigateur en mode headless
-    options = options()
+    options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-dev-shm-usage")
     # Instantiation du driver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=pd.options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     data = []
 
