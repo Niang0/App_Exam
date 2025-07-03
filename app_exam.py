@@ -43,7 +43,7 @@ if menu == "Scraper les données (nettoyées)":
 if st.button("Lancer le scraping"):
     with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
         try:
-            df = scraper_multi_pages(nb_pages=nb_pages, categorie=categorie)
+            df = scraper_multi_pages(nb_pages, categorie)
 
             if df.empty:
                 st.warning("Le scraping a réussi mais aucun résultat n’a été trouvé.")
