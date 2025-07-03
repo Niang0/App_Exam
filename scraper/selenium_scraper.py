@@ -1,12 +1,8 @@
 import pandas as pd
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 import time
 
 
@@ -30,7 +26,7 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-dev-shm-usage")
     # Instantiation du driver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=Options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     # Initialisation de la liste pour stocker les données
     data = []
 
