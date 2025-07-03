@@ -29,7 +29,7 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
     options.add_argument("--no-sandbox")
 
     # Instantiation du driver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=pd.options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     data = []
 
     try:
