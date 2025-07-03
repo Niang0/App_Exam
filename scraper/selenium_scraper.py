@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 
 
-def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés, Appartements à louer, Terrains à vendre"):
+def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
     # Mots de base selon la catégorie choisie
     base_urls = {
         "Appartements à louer": "https://www.expat-dakar.com/appartements-a-louer?page=",
