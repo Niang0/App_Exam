@@ -43,9 +43,9 @@ if menu == "Scraper les données (nettoyées)":
 if st.button("Lancer le scraping"):
     with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
        try:
-            df = scraper_multi_pages(nb_pages, categorie)
+        df = scraper_multi_pages(nb_pages, categorie)
        except Exception as e:
-            print(f"An error occurred: {e}")
+        print(f"An error occurred: {e}")
 
 # --- Visualisation Dashboard ---
 elif menu == "Visualiser le dashboard":
