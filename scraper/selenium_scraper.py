@@ -85,9 +85,3 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
     # Convertir en DataFrame
     df = pd.DataFrame(data)
     return df
-
-
-# Exemple d'appel à la fonction
-if __name__ == "__main__":
-    df = scraper_multi_pages(nb_pages=5, categorie="Appartements meublés")
-    print(df)
