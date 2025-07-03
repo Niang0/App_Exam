@@ -29,8 +29,12 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements meublés"):
     options.add_argument("--no-sandbox")
 
     # Instantiation du driver
-    chrome_driver_path = r"C:\path\to\chromedriver.exe"  # Remplacez par le chemin réel de votre chromedriver
-    driver = webdriver.Chrome(service=Service(chrome_driver_path), options=options)
+    driver = webdriver.Chrome(service=Service(), options=options)
+    driver = webdriver.Chrome()
+    chrome_driver_path = <chrome drive .exe path>
+    driver = webdriver.Chrome(chrome_driver_path)
+    driver.get("https://www.google.com/")
+    driver.quit()
     data = []
 
     try:
