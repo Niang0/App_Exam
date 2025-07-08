@@ -40,17 +40,17 @@ if menu == "Scraper les données (nettoyées)":
     st.header("🕷️ Scraper les données")
     categorie = st.selectbox("Choisissez une catégorie :", list(fichiers_nettoyes.keys()))
     nb_pages = st.slider("Nombre de pages à scraper :", 1, 100, 5)
-if st.button("Lancer le scraping"):
-    with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
-       try:
-        df = scraper_multi_pages(nb_pages, categorie)
-        nom_fichier = {
-                "Appartements à louer": "data/expatDkr_app_nettoyees.csv",
-                "Appartements meublés": "data/expatDkr_app_meubles.csv",
-                "Terrains à vendre": "data/expatDkr_terrain_nettoyees.csv"
-            }[categorie]
-       except Exception as e:
-        print(f"An error occurred: {e}")
+    if st.button("Lancer le scraping"):
+        with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
+            try:
+                df = scraper_multi_pages(nb_pages, categorie)
+                nom_fichier = {
+                        "Appartements à louer": "data/expatDkr_app_nettoyees.csv",
+                        "Appartements meublés": "data/expatDkr_app_meubles.csv",
+                        "Terrains à vendre": "data/expatDkr_terrain_nettoyees.csv"
+                    }[categorie]
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
 # --- Visualisation Dashboard ---
 elif menu == "Visualiser le dashboard":
