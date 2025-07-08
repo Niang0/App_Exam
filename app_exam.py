@@ -45,9 +45,9 @@ if menu == "Scraper les données (nettoyées)":
             try:
                 df = scraper_multi_pages(nb_pages, categorie)
                 nom_fichier = {
-                        "Appartements à louer": "data/expatDkr_app_nettoyees.csv",
+                        "Appartements à louer": "data/expat_dakar_apps_nettoyees.csv",
                         "Appartements meublés": "data/expatDkr_app_meubles.csv",
-                        "Terrains à vendre": "data/expatDkr_terrain_nettoyees.csv"
+                        "Terrains à vendre": "data/expat_terrains_nettoyees.csv"
                     }[categorie]
             except Exception as e:
                 print(f"An error occurred: {e}")
