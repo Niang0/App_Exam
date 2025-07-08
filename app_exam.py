@@ -30,7 +30,7 @@ fichiers_brutes = {
 }
 
 fichiers_nettoyes = {
-    "Appartements à louer": "Data/expat_dkr_app_nettoyees.csv",
+    "Appartements à louer": "Data/expat_dakar_apps_nettoyees.csv",
     "Appartements meublés": "Data/expatDkr_app_meubles.csv",
     "Terrains à vendre": "Data/expat_terrains_nettoyees.csv"
 }
