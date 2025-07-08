@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 from scraper.selenium_scraper import scraper_multi_pages
