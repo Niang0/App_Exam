@@ -81,4 +81,8 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
 
     # Convertir en DataFrame
     df = pd.DataFrame(data)
+    # 🔐 S'assurer que toutes les colonnes clés existent même si vides
+    for col in ["superficie", "prix", "chambres"]:
+        if col not in df.columns:
+            df[col] = None
     return df
