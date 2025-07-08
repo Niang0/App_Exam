@@ -1,10 +1,6 @@
+import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
-import pandas as pd
-
-import streamlit as st
-import matplotlib.pyplot as plt
-import pandas as pd
 
 def afficher_dashboard(df, titre):
     st.subheader(f"📊 Dashboard - {titre}")
