@@ -1,17 +1,14 @@
-import pandas as pd
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-import time
-
-
 def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
-    # Mots de base selon la catégorie choisie
+    import pandas as pd
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.chrome.service import Service
+    from selenium.webdriver.chrome.options import Options
+    from webdriver_manager.chrome import ChromeDriverManager
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    import time
+
     base_urls = {
         "Appartements à louer": "https://www.expat-dakar.com/appartements-a-louer?page=",
         "Appartements meublés": "https://www.expat-dakar.com/appartements-meubles?page=",
@@ -22,28 +19,27 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
     if not url_base:
         raise ValueError(f"Catégorie inconnue : {categorie}")
 
-    # Configuration du navigateur en mode headless
     options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-dev-shm-usage")
-    # Instantiation du driver
+    options.add_argument("--remote-debugging-port=9222")
+    
+
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-    # Initialisation de la liste pour stocker les données
     data = []
 
     try:
         for page in range(1, nb_pages + 1):
             url = f"{url_base}{page}"
             driver.get(url)
+            time.sleep(1)
 
-            # Attendre que les éléments soient chargeés
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.CSS_SELECTOR, "[class='listings-cards__list-item ']"))
             )
-
             containers = driver.find_elements(By.CSS_SELECTOR, "[class='listings-cards__list-item ']")
 
             for container in containers:
@@ -71,17 +67,14 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
                         "prix": prix,
                         "image_lien": image_link
                     })
-
                 except Exception as e:
                     print(f"Erreur lors du traitement d'un élément: {e}")
-                    continue  # Ignore les erreurs d'une annonce
-
+                    continue
     finally:
         driver.quit()
 
-    # Convertir en DataFrame
     df = pd.DataFrame(data)
-    # 🔐 S'assurer que toutes les colonnes clés existent même si vides
+    df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
     for col in ["superficie", "prix", "chambres"]:
         if col not in df.columns:
             df[col] = None

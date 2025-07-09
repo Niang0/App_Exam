@@ -1,8 +1,8 @@
 import streamlit as st
 import pandas as pd
-from scraper.selenium_scraper import scraper_multi_pages
+from scraper.selenium_scraper import scraper_multi_pages  # Chemin mis à jour
 from dashboard.visualisations import afficher_dashboard
-from feedback.evaluation import formulaire 
+from feedback.evaluation import formulaire
 
 # --- Configuration de la page ---
 st.set_page_config(page_title="SAM SCRAPER", layout="wide")
@@ -39,17 +39,32 @@ if menu == "Scraper les données (nettoyées)":
     st.header("🕷️ Scraper les données")
     categorie = st.selectbox("Choisissez une catégorie :", list(fichiers_nettoyes.keys()))
     nb_pages = st.slider("Nombre de pages à scraper :", 1, 100, 5)
+
     if st.button("Lancer le scraping"):
         with st.spinner(f"Scraping de {categorie} sur {nb_pages} page(s)..."):
             try:
+                # Lancement du scraping
                 df = scraper_multi_pages(nb_pages, categorie)
-                nom_fichier = {
-                        "Appartements à louer": "data/expat_dakar_apps_nettoyees.csv",
-                        "Appartements meublés": "data/expatDkr_app_meubles.csv",
-                        "Terrains à vendre": "data/expat_terrains_nettoyees.csv"
-                    }[categorie]
+
+                # Sauvegarde dans le bon fichier CSV
+                nom_fichier = fichiers_nettoyes[categorie]
+                df.to_csv(nom_fichier, index=False)
+
+                st.success(f"{len(df)} annonces récupérées et enregistrées dans {nom_fichier}")
+
+                # Affichage du DataFrame
+                st.subheader("Aperçu des données scrapées")
+                st.dataframe(df, use_container_width=True)
+
+                # Bouton de téléchargement
+                st.download_button(
+                    label=f"📥 Télécharger les données ({len(df)} lignes)",
+                    data=df.to_csv(index=False).encode("utf-8"),
+                    file_name=nom_fichier.split("/")[-1],
+                    mime="text/csv"
+                )
             except Exception as e:
-                print(f"An error occurred: {e}")
+                st.error(f"❌ Une erreur est survenue pendant le scraping : {e}")
 
 # --- Visualisation Dashboard ---
 elif menu == "Visualiser le dashboard":
@@ -61,6 +76,8 @@ elif menu == "Visualiser le dashboard":
         afficher_dashboard(df, choix)
     except FileNotFoundError:
         st.error("Fichier non trouvé. Veuillez lancer le scraping d'abord.")
+    except Exception as e:
+        st.error(f"Erreur lors du chargement des données : {e}")
 
 # --- Téléchargement des données brutes ---
 elif menu == "Télécharger les données brutes":
@@ -71,12 +88,14 @@ elif menu == "Télécharger les données brutes":
             df = pd.read_excel(chemin)
             st.download_button(
                 label=f"Télécharger : {titre}",
-                data=df.to_csv(index=False).encode('utf-8'),
-                file_name=chemin.replace("data/", "").replace(".xlsx", ".csv"),
+                data=df.to_csv(index=False).encode("utf-8"),
+                file_name=chemin.replace("Data/", "").replace(".xlsx", ".csv"),
                 mime="text/csv"
             )
         except FileNotFoundError:
             st.warning(f"⚠️ Fichier manquant : {chemin}")
+        except Exception as e:
+            st.error(f"❌ Erreur : {e}")
 
 # --- Évaluation de l'application ---
 elif menu == "Donner votre avis":
