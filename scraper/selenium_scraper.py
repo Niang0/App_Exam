@@ -1,4 +1,7 @@
 def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
+    """
+    Scrape multi-pages avec gestion d'erreurs améliorée
+    """
     import pandas as pd
     from selenium import webdriver
     from selenium.webdriver.common.by import By
@@ -7,6 +10,7 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
     from webdriver_manager.chrome import ChromeDriverManager
     from selenium.webdriver.support.ui import WebDriverWait
     from selenium.webdriver.support import expected_conditions as EC
+    from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException
     import time
 
     base_urls = {
@@ -17,65 +21,138 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
 
     url_base = base_urls.get(categorie)
     if not url_base:
-        raise ValueError(f"Catégorie inconnue : {categorie}")
+        raise ValueError(f"Catégorie inconnue : {categorie}. Catégories disponibles : {list(base_urls.keys())}")
 
+    # Configuration Chrome optimisée
     options = Options()
     options.add_argument("--headless=new")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--window-size=1920,1080")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--remote-debugging-port=9222")
-    
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+    options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    options.add_experimental_option('useAutomationExtension', False)
 
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver = None
     data = []
 
     try:
+        # Initialisation du driver avec gestion d'erreur
+        try:
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+            driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        except WebDriverException as e:
+            raise Exception(f"Impossible d'initialiser le navigateur Chrome : {str(e)}")
+
+        print(f"Début du scraping pour {categorie} sur {nb_pages} pages...")
+
         for page in range(1, nb_pages + 1):
             url = f"{url_base}{page}"
-            driver.get(url)
-            time.sleep(1)
+            print(f"Scraping page {page}/{nb_pages}: {url}")
+            
+            try:
+                driver.get(url)
+                time.sleep(2)  # Attente plus longue pour la stabilité
 
-            WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "[class='listings-cards__list-item ']"))
-            )
-            containers = driver.find_elements(By.CSS_SELECTOR, "[class='listings-cards__list-item ']")
+                # Attendre que les éléments se chargent
+                containers = WebDriverWait(driver, 15).until(
+                    EC.presence_of_all_elements_located((By.CSS_SELECTOR, "[class='listings-cards__list-item ']"))
+                )
 
-            for container in containers:
-                try:
-                    details = container.find_element(By.CSS_SELECTOR, ".listing-card__header__title").text
-                    adresse = container.find_element(By.CSS_SELECTOR, ".listing-card__header__location").text
+                print(f"Trouvé {len(containers)} annonces sur la page {page}")
 
-                    tags_container = container.find_element(By.CSS_SELECTOR, '.listing-card__header__tags')
-                    span_tags = tags_container.find_elements(By.CSS_SELECTOR, 'span.listing-card__header__tags__item')
+                for i, container in enumerate(containers):
+                    try:
+                        # Extraction des données avec gestion d'erreur individuelle
+                        details = None
+                        try:
+                            details = container.find_element(By.CSS_SELECTOR, ".listing-card__header__title").text.strip()
+                        except NoSuchElementException:
+                            print(f"Titre manquant pour l'annonce {i+1}")
 
-                    chambres = span_tags[0].text if len(span_tags) > 0 else None
-                    superficie = span_tags[1].text if len(span_tags) > 1 else None
+                        adresse = None
+                        try:
+                            adresse = container.find_element(By.CSS_SELECTOR, ".listing-card__header__location").text.strip()
+                        except NoSuchElementException:
+                            print(f"Adresse manquante pour l'annonce {i+1}")
 
-                    prix = container.find_element(By.CSS_SELECTOR, ".listing-card__info-bar").text
+                        # Extraction des tags (chambres, superficie)
+                        chambres = None
+                        superficie = None
+                        try:
+                            tags_container = container.find_element(By.CSS_SELECTOR, '.listing-card__header__tags')
+                            span_tags = tags_container.find_elements(By.CSS_SELECTOR, 'span.listing-card__header__tags__item')
+                            
+                            if len(span_tags) > 0:
+                                chambres = span_tags[0].text.strip()
+                            if len(span_tags) > 1:
+                                superficie = span_tags[1].text.strip()
+                        except NoSuchElementException:
+                            print(f"Tags manquants pour l'annonce {i+1}")
 
-                    image = container.find_element(By.CSS_SELECTOR, ".listing-card__image__resource")
-                    image_link = image.get_attribute("src")
+                        # Prix
+                        prix = None
+                        try:
+                            prix = container.find_element(By.CSS_SELECTOR, ".listing-card__info-bar").text.strip()
+                        except NoSuchElementException:
+                            print(f"Prix manquant pour l'annonce {i+1}")
 
-                    data.append({
-                        "categorie": categorie,
-                        "details": details,
-                        "adresse": adresse,
-                        "chambres": chambres,
-                        "superficie": superficie,
-                        "prix": prix,
-                        "image_lien": image_link
-                    })
-                except Exception as e:
-                    print(f"Erreur lors du traitement d'un élément: {e}")
-                    continue
+                        # Image
+                        image_link = None
+                        try:
+                            image = container.find_element(By.CSS_SELECTOR, ".listing-card__image__resource")
+                            image_link = image.get_attribute("src")
+                        except NoSuchElementException:
+                            print(f"Image manquante pour l'annonce {i+1}")
+
+                        # N'ajouter que si au moins le titre ou l'adresse existe
+                        if details or adresse:
+                            data.append({
+                                "categorie": categorie,
+                                "details": details,
+                                "adresse": adresse,
+                                "chambres": chambres,
+                                "superficie": superficie,
+                                "prix": prix,
+                                "image_lien": image_link
+                            })
+
+                    except Exception as e:
+                        print(f"Erreur lors du traitement de l'annonce {i+1} sur la page {page}: {str(e)}")
+                        continue
+
+            except TimeoutException:
+                print(f"Timeout sur la page {page} - passage à la suivante")
+                continue
+            except Exception as e:
+                print(f"Erreur sur la page {page}: {str(e)}")
+                continue
+
+    except Exception as e:
+        print(f"Erreur générale durant le scraping : {str(e)}")
+        raise
+
     finally:
-        driver.quit()
+        if driver:
+            driver.quit()
 
+    # Création du DataFrame
     df = pd.DataFrame(data)
+    
+    if df.empty:
+        print("Aucune donnée récupérée")
+        return pd.DataFrame()
+    
+    # Nettoyage des données
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)
-    for col in ["superficie", "prix", "chambres"]:
+    
+    # Assurer que toutes les colonnes existent
+    colonnes_requises = ["categorie", "details", "adresse", "chambres", "superficie", "prix", "image_lien"]
+    for col in colonnes_requises:
         if col not in df.columns:
             df[col] = None
+
+    print(f"Scraping terminé : {len(df)} annonces récupérées")
     return df
