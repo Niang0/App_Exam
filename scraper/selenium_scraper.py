@@ -35,9 +35,10 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option('useAutomationExtension', False)
 
-    driver = None
+    # Liste pour stocker les données
     data = []
-
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service)
     try:
         # Initialisation du driver avec gestion d'erreur
         try:
