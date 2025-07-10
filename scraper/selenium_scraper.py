@@ -1,18 +1,18 @@
+import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException
+import time
+
 def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
     """
     Scrape multi-pages avec gestion d'erreurs améliorée
     """
-    import pandas as pd
-    from selenium import webdriver
-    from selenium.webdriver.common.by import By
-    from selenium.webdriver.chrome.service import Service
-    from selenium.webdriver.chrome.options import Options
-    from webdriver_manager.chrome import ChromeDriverManager
-    from selenium.webdriver.support.ui import WebDriverWait
-    from selenium.webdriver.support import expected_conditions as EC
-    from selenium.common.exceptions import TimeoutException, NoSuchElementException, WebDriverException
-    import time
-
     base_urls = {
         "Appartements à louer": "https://www.expat-dakar.com/appartements-a-louer?page=",
         "Appartements meublés": "https://www.expat-dakar.com/appartements-meubles?page=",
@@ -37,12 +37,12 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
 
     # Liste pour stocker les données
     data = []
-    service = Service(ChromeDriverManager().install())
-    driver = webdriver.Chrome(service=service)
+    driver = None
     try:
         # Initialisation du driver avec gestion d'erreur
         try:
-            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+            service = Service(ChromeDriverManager().install())
+            driver = webdriver.Chrome(service=service, options=options)
             driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
         except WebDriverException as e:
             raise Exception(f"Impossible d'initialiser le navigateur Chrome : {str(e)}")
