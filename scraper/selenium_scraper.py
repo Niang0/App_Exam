@@ -14,7 +14,7 @@ def scraper_multi_pages(nb_pages=5, categorie="Appartements à louer"):
     Scrape multi-pages avec gestion d'erreurs améliorée
     """
     base_urls = {
-        "Appartements à louer": "https://www.expat-dakar.com/appartements-a-louer?page=",
+        "Appartements à louer": "https://www.expat-dakar.com/appartements-a-louer",
         "Appartements meublés": "https://www.expat-dakar.com/appartements-meubles?page=",
         "Terrains à vendre": "https://www.expat-dakar.com/terrains-a-vendre?page="
     }
