@@ -6,3 +6,5 @@ webdriver-manager
 matplotlib
 dash
 seaborn
+beautifulsoup4
+requests
